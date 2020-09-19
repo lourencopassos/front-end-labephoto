@@ -1,8 +1,8 @@
 import React from "react";
-import { Background, FormContainer } from "./style";
+import { Background, FormContainer, SignupContainer } from "./style";
 import { Form, Input, Button } from "antd";
 import logo from "../../assets/img/labephoto2.png";
-import { useHistory } from "react-router-dom";
+import { useHistory, Link } from "react-router-dom";
 
 function LoginPage(props) {
   const tailLayout = {
@@ -67,6 +67,11 @@ function LoginPage(props) {
               Acessar
             </Button>
           </Form.Item>
+          <SignupContainer>
+            <p>
+              Se você ainda não tem conta, clique <Link to="/signup">aqui</Link>
+            </p>
+          </SignupContainer>
         </Form>
       </FormContainer>
     </Background>
