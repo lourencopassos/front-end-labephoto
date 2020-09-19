@@ -1,13 +1,16 @@
-import React from "react";
-import { Layout, Typography } from "antd";
+import React, { useEffect, useState } from "react";
+import { Layout, Typography, Modal } from "antd";
 import { PageContent, PageHeadline } from "./style.js";
 import ImageMiniature from "../../components/ImageMiniature/ImageMiniature";
-import  Header  from "../../components/Header/Header";
+import Header from "../../components/Header/Header";
+import PhotoDetailModal from "../../components/PhotoDetailModal/PhotoDetailModal.js";
 
 const { Content, Footer } = Layout;
 const { Title } = Typography;
 
 function HomePage(props) {
+  const [modalVisible, setModalVisible] = useState(true);
+
   return (
     <PageContent>
       <Header />
@@ -17,6 +20,10 @@ function HomePage(props) {
       <div>
         <ImageMiniature />
       </div>
+      <PhotoDetailModal
+        visible={modalVisible}
+        onCancel={() => setModalVisible(false)}
+      />
     </PageContent>
   );
 }

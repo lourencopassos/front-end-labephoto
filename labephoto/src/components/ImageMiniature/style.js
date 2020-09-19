@@ -9,7 +9,7 @@ export const MiniatureCardContainer = styled.div`
 export const MiniatureCard = styled.div`
   height: 200px;
   border-radius: 10px;
-  border: 1px solid black;
+  border: 1px solid #0099ff;
   width: 150px;
   display: flex;
   margin: 16px 16px;

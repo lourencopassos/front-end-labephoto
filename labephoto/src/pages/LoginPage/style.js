@@ -31,3 +31,12 @@ export const FormContainer = styled.div`
     }
   }
 `;
+
+export const SignupContainer = styled.div`
+  display: flex;
+  justify-content: center;
+
+  p {
+    font-size: 12px;
+  }
+`;
