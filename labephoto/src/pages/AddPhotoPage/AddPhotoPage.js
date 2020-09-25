@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Header from "../../components/AddPhotoHeader/AddPhotoHeader";
 import {
   Form,
@@ -10,6 +10,7 @@ import {
   Tooltip,
   Button,
   DatePicker,
+  notification,
 } from "antd";
 import {
   FormContainer,
@@ -22,19 +23,35 @@ import {
   FormItemUpload,
   FormItemDate,
 } from "./style.js";
-import { InboxOutlined, PlusOutlined } from "@ant-design/icons";
+import { InboxOutlined, PlusOutlined, CheckOutlined } from "@ant-design/icons";
 import "moment/locale/pt-br";
 import locale from "antd/es/date-picker/locale/pt_BR";
-import moment from "moment";
+import { useHistory } from "react-router-dom";
+import { createPhoto } from "../../utils/api";
+import firebase from "@firebase/app";
+import "@firebase/storage";
+import { storageRef } from "../../utils/firebaseConfig";
 
 function AddPhotoPage() {
+  const [buttonLoading, setButtonLoading] = useState(false);
+  const [token, setToken] = useState();
   const [tags, setTags] = useState([]);
   const [inputVisible, setInputVisible] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [editInputValue, setEditInputValue] = useState("");
   const [editInputIndex, setEditInputIndex] = useState(-1);
+  const [uploadFile, setUploadFile] = useState();
 
+  const history = useHistory();
   const [form] = Form.useForm();
+
+  useEffect(() => {
+    setToken(localStorage.getItem("token"));
+    if (token === null) {
+      alert("Login necessário!");
+      history.push("/");
+    }
+  }, [token]);
 
   const handleClose = (removedTag) => {
     const filteredTags = tags.filter((tag) => tag !== removedTag);
@@ -57,7 +74,6 @@ function AddPhotoPage() {
     const oldTags = tags;
     const newTags = [...oldTags, inputValue];
 
-    console.log(inputValue);
     if (inputValue && tags.indexOf(inputValue) === -1) {
       setTags(newTags);
       form.setFieldsValue({
@@ -93,8 +109,26 @@ function AddPhotoPage() {
     setEditInputValue(input);
   };
 
-  const onFinish = (values) => {
-    console.log(values);
+  const onFinish = async (values) => {
+    setButtonLoading(true);
+    const uploadBody = {
+      subtitle: values.subtitle,
+      tags: values.tags,
+      date: values.date.format("YYYY-MM-DD"),
+      file: uploadFile,
+    };
+
+    await createPhoto(uploadBody, token);
+    setButtonLoading(false);
+    console.log("Criado");
+    form.resetFields();
+    notification.open({
+      message: "Notificação ",
+      description:
+        "Imagem adicionada com sucesso!",
+      icon: <CheckOutlined style={{ color: "#108ee9" }} />,
+    });
+    
   };
 
   const onFinishFailed = (errorInfo) => {
@@ -105,21 +139,51 @@ function AddPhotoPage() {
   const { TextArea } = Input;
   const { Title } = Typography;
 
+  const handleUpload = async ({ file, onSuccess, onError, onProgress }) => {
+    let uploadTask = storageRef.child(`images/${file.name}`).put(file);
+
+    uploadTask.on(
+      "state_changed",
+      function (snapshot) {
+        let progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        onProgress(progress);
+        switch (snapshot.state) {
+          case firebase.storage.TaskState.PAUSED:
+            break;
+          case firebase.storage.TaskState.RUNNING:
+            break;
+        }
+      },
+      function (error) {
+        onError(error);
+      },
+      function () {
+        uploadTask.snapshot.ref.getDownloadURL().then(function (downloadURL) {
+          onSuccess(downloadURL);
+          setUploadFile(downloadURL);
+        });
+      }
+    );
+    const imageRef = storageRef.child(`images/${file.name}`);
+    await imageRef.put(file);
+    const mediaUrl = await imageRef.getDownloadURL();
+  };
+
   const props = {
     name: "file",
+    accept: ".jpeg,.png,.jpg",
     multiple: false,
-    action: "https://www.mocky.io/v2/5cc8019d300000980a055e76",
     onChange(info) {
       const { status } = info.file;
       if (status !== "uploading") {
-        console.log(info.file, info.fileList);
       }
       if (status === "done") {
-        message.success(`${info.file.name} file uploaded successfully.`);
+        message.success(`${info.file.name} Arquivo baixado com sucesso.`);
       } else if (status === "error") {
-        message.error(`${info.file.name} file upload failed.`);
+        message.error(`${info.file.name} Falha. Tente novamente`);
       }
     },
+    customRequest: handleUpload,
   };
 
   return (
@@ -137,32 +201,6 @@ function AddPhotoPage() {
           form={form}
           name="basic"
         >
-          <FormRow>
-            <FormItemAuthor
-              label="Autor da Imagem"
-              name="author"
-              rules={[
-                {
-                  required: true,
-                  message: "Escreva o autor da imagem!",
-                },
-              ]}
-            >
-              <Input />
-            </FormItemAuthor>
-            <FormItemCollection
-              label="Coleção"
-              name="collection"
-              rules={[
-                {
-                  required: true,
-                  message: "Escreva a coleção da qual a imagem faz parte!",
-                },
-              ]}
-            >
-              <Input />
-            </FormItemCollection>
-          </FormRow>
           <FormRow>
             <FormItemSubtitle
               label="Legenda da Imagem"
@@ -292,6 +330,7 @@ function AddPhotoPage() {
                 key="submit"
                 htmlType="submit"
                 type="primary"
+                loading={buttonLoading}
               >
                 Enviar
               </Button>
