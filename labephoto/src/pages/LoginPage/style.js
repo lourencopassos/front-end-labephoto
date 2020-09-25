@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { Alert } from "antd";
 
 export const Background = styled.div`
   height: 100vh;
@@ -7,6 +8,10 @@ export const Background = styled.div`
   align-items: center;
   justify-content: center;
   background-color: #0099ff;
+`;
+
+export const CustomAlert = styled(Alert)`
+  margin-bottom: 15px;
 `;
 
 export const FormContainer = styled.div`

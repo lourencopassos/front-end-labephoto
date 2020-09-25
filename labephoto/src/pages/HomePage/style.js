@@ -7,7 +7,7 @@ export const LogoContainer = styled.div`
 `;
 
 export const PageContent = styled.div`
-  height: 100vh;
+  height: 100%;
 `;
 
 export const AddPhotosButton = styled.button`
@@ -18,4 +18,17 @@ export const AddPhotosButton = styled.button`
 export const PageHeadline = styled.div`
   text-align: center;
   margin-top: 50px;
+`;
+
+export const LoadingContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+`;
+
+export const PageBody = styled.div`
+  height: 50vh;
+  width: 100%;
 `;

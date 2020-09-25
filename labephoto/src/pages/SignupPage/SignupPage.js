@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Background,
   SignupForm,
@@ -7,12 +7,40 @@ import {
   FormRow,
   SignupContainer,
 } from "./style";
-import { Form, Input, Tooltip, Button } from "antd";
+import { Form, Input, Tooltip, Button, Alert } from "antd";
 import { QuestionCircleOutlined } from "@ant-design/icons";
 import logo from "../../assets/img/labephoto2.png";
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
+import { login, signup } from "../../utils/api";
 
 function SignupPage(props) {
+  const [buttonLoading, setButtonLoading] = useState(false);
+  const onFinish = async (values) => {
+    const signupBody = {
+      email: values.email,
+      password: values.password,
+      nickname: values.nickname,
+      name: values.name,
+    };
+
+    setButtonLoading(true);
+
+    await signup(signupBody);
+
+    const loginBody = {
+      email: values.email,
+      password: values.password,
+    };
+    const response = await login(loginBody);
+
+    if (!response) {
+      setButtonLoading(false);
+    } else {
+      localStorage.setItem("token", response.token);
+      history.replace("/home");
+    }
+  };
+
   const formItemLayout = {
     labelCol: {
       xs: {
@@ -45,6 +73,8 @@ function SignupPage(props) {
     },
   };
 
+  const history = useHistory();
+
   const [form] = Form.useForm();
 
   return (
@@ -54,7 +84,12 @@ function SignupPage(props) {
           <img src={logo} />
         </FormHeader>
         <FormContainer>
-          <Form {...formItemLayout} name="signup" form={form}>
+          <Form
+            {...formItemLayout}
+            name="signup"
+            form={form}
+            onFinish={onFinish}
+          >
             <FormRow>
               <Form.Item
                 label="Email"
@@ -69,6 +104,20 @@ function SignupPage(props) {
               >
                 <Input />
               </Form.Item>
+              <FormRow>
+                <Form.Item
+                  label="Nome"
+                  name="name"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Nome inválido",
+                    },
+                  ]}
+                >
+                  <Input />
+                </Form.Item>
+              </FormRow>
               <Form.Item
                 name="password"
                 label="Senha"
@@ -129,8 +178,12 @@ function SignupPage(props) {
                 <Input />
               </Form.Item>
               <Form.Item {...tailFormItemLayout}>
-                <Button type="primary" htmlType="submit">
-                  Register
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  loading={buttonLoading}
+                >
+                  Registrar
                 </Button>
               </Form.Item>
             </FormRow>

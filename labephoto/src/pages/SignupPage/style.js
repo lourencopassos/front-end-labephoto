@@ -12,8 +12,9 @@ export const Background = styled.div`
 export const SignupForm = styled.div`
   border-radius: 16px;
   background-color: whitesmoke;
-  height: 60%;
+  height: 70%;
   width: 50%;
+  
 `;
 
 export const FormHeader = styled.div`
