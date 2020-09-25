@@ -1,10 +1,18 @@
-import React from "react";
-import { Background, FormContainer, SignupContainer } from "./style";
+import React, { useState } from "react";
+import {
+  Background,
+  FormContainer,
+  SignupContainer,
+  CustomAlert,
+} from "./style";
 import { Form, Input, Button } from "antd";
 import logo from "../../assets/img/labephoto2.png";
 import { useHistory, Link } from "react-router-dom";
+import { login } from "../../utils/api.js";
 
 function LoginPage(props) {
+  const [buttonLoading, setButtonLoading] = useState(false);
+  const [errorAlert, setErrorAlert] = useState(false);
   const tailLayout = {
     wrapperCol: {
       offset: 10,
@@ -14,12 +22,25 @@ function LoginPage(props) {
 
   const history = useHistory();
 
-  const login = () => {
-    history.replace("/home");
-  };
+  const renderError = errorAlert && (
+    <CustomAlert
+      message="Erro"
+      description="Confira os dados"
+      type="error"
+      closable
+    />
+  );
 
-  const onFinish = (values) => {
-    login();
+  const onFinish = async (values) => {
+    setButtonLoading(true);
+    const response = await login(values);
+    if (!response) {
+      setButtonLoading(false);
+      setErrorAlert(true);
+    } else {
+      localStorage.setItem("token", response.token);
+      history.replace("/home");
+    }
   };
 
   const onFinishFailed = (errorInfo) => {
@@ -62,8 +83,9 @@ function LoginPage(props) {
           >
             <Input.Password />
           </Form.Item>
+          {renderError}
           <Form.Item {...tailLayout}>
-            <Button type="primary" htmlType="submit">
+            <Button type="primary" htmlType="submit" loading={buttonLoading}>
               Acessar
             </Button>
           </Form.Item>
